@@ -40,7 +40,14 @@ jobs:
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
     - name: Release
       if: github.event_name == 'workflow_dispatch'
-      run: ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.releaseVersion }}
+      run: |
+        # GPG_SECRET_KEYS created with: gpg --export-secret-keys --armor
+        echo ${{secrets.GPG_SECRET_KEYS}} | gpg --import --armor --no-tty --batch --yes
+        git config --local user.email "candrews@integralblue.com"
+        git config --local user.name "Craig Andrews (GitHub Actions)"
+        git config --local commit.gpgsign true
+        git config --local user.signingkey ${{secrets.GPG_KEY_ID}}
+        ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.releaseVersion }}
       env:
         GITHUB_ACTOR: ${{ github.actor }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
