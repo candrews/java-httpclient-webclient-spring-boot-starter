@@ -92,7 +92,7 @@ tasks.withType(AbstractArchiveTask) {
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
-			artifactId = 'java-httpclient-webflux-spring-boot-starter'
+			artifactId = 'java-httpclient-webclient-spring-boot-starter'
             from components.java
 
             // https://cristian.io/post/gradle-publish-bom/
