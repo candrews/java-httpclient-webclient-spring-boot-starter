@@ -151,7 +151,7 @@ publishing {
 		}
 		maven {
 			name = "GitHubPackages"
-			url = "https://maven.pkg.github.com/candrews/java-httpclient-webflux-spring-boot-starter"
+			url = "https://maven.pkg.github.com/candrews/java-httpclient-webclient-spring-boot-starter"
 			credentials {
 				username = System.getenv("GITHUB_ACTOR")
 				password = System.getenv("GITHUB_TOKEN")
