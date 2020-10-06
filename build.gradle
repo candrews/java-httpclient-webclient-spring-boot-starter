@@ -1,0 +1,204 @@
+plugins {
+	id 'org.springframework.boot' version '2.3.4.RELEASE'
+	id 'java-library'
+	id 'io.codearte.nexus-staging' version '0.22.0'
+	id "de.marcphilipp.nexus-publish" version "0.3.0"
+	id 'maven-publish'
+	id 'signing'
+	id 'checkstyle'
+	id 'pmd'
+	id 'jacoco'
+	id 'com.github.spotbugs' version '4.5.0'
+	id 'nebula.lint' version '16.9.0'
+	id 'io.freefair.lombok' version '5.1.1'
+	id 'name.remal.sonarlint' version '1.0.198'
+	id 'net.researchgate.release' version '2.8.1'
+}
+
+group = 'com.integralblue'
+
+compileJava {
+	options.release = 11
+}
+
+configurations {
+	bom
+	annotationProcessor {
+		extendsFrom bom
+	}
+	implementation {
+		extendsFrom bom
+	}
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
+
+dependencies {
+	bom platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+	compileOnly 'org.springframework.boot:spring-boot-starter-webflux'
+	testImplementation('org.springframework.boot:spring-boot-starter-test'){
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
+	testImplementation 'com.pgs-soft:HttpClientMock:1.0.0'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.0'
+	testRuntime 'junit:junit' // required by com.squareup.okhttp3:mockwebserver
+	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
+}
+
+test {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+check {
+	dependsOn jacocoTestCoverageVerification
+}
+
+gradleLint {
+	// 'unused-exclude-by-dep' doesn't work with BOM dependency management: https://github.com/nebula-plugins/gradle-lint-plugin/issues/224
+	rules	= ['archaic-wrapper']
+	criticalRules = ['dependency-parentheses', 'overridden-dependency-version'] // <-- this will fail the build in the event of a violation
+}
+
+bootJar {
+	enabled = false
+}
+
+jar {
+	enabled = true
+	archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
+}
+
+// reproducible builds, see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives
+tasks.withType(AbstractArchiveTask) {
+	preserveFileTimestamps = false
+	reproducibleFileOrder = true
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			artifactId = 'java-httpclient-webclient-spring-boot-starter'
+            from components.java
+
+            // https://cristian.io/post/gradle-publish-bom/
+            // specify versions on dependencies in the pom
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            // since all versions are specified, remove the bom imports
+            pom.withXml {
+                asNode().dependencyManagement.dependencies.dependency.findAll { node ->
+                    node.scope[0].text().equals('import')
+                }.each { node -> node.replaceNode {} }
+            }
+			pom {
+				name = 'Java HttpClient for Spring Web Client Spring Boot Starter'
+				packaging = 'jar'
+				artifactId = 'java-httpclient-webclient-spring-boot-starter' 
+				description = 'Java HttpClient support for Spring WebClient'
+				url = 'https://github.com/candrews/java-httpclient-webclient-spring-boot-starter'
+				scm {
+					connection = 'scm:git:https://github.com/candrews/java-httpclient-webclient-spring-boot-starter.git'
+					developerConnection = 'scm:git:git@github.com:candrews/java-httpclient-webclient-spring-boot-starter.git'
+					url = 'https://github.com/candrews/java-httpclient-webclient-spring-boot-starter'
+				}
+				licenses {
+					license {
+						name = 'The Apache License, Version 2.0'
+						url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+					}
+				}
+				developers {
+					developer {
+						id = 'candrews'
+						name = 'Craig Andrews'
+						email = 'candrews@integralblue.com'
+					}
+				}
+			}
+		}
+	}
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = "https://maven.pkg.github.com/candrews/java-httpclient-webclient-spring-boot-starter"
+			credentials {
+				username = System.getenv("GITHUB_ACTOR")
+				password = System.getenv("GITHUB_TOKEN")
+			}
+		}
+	}
+}
+nexusPublishing {
+	repositories {
+		sonatype {
+				username = System.getenv("OSSRH_USERNAME")
+				password = System.getenv("OSSRH_PASSWORD")
+		}
+	}
+}
+
+signing {
+	sign publishing.publications.mavenJava
+}
+
+release {
+	git {
+		signTag = true
+	}
+}
+
+nexusStaging {
+	packageGroup = group
+	username = System.getenv("OSSRH_USERNAME")
+	password = System.getenv("OSSRH_PASSWORD")
+}
+
+if(nexusPublishing.useStaging.get()) {
+	publish.finalizedBy closeAndReleaseRepository
+}
+
+afterReleaseBuild {
+	dependsOn publish
+}
+
+pmd {
+	ruleSets = []
+	ruleSetConfig = resources.text.fromFile("config/pmd/pmdruleset.xml")
+}
+
+spotbugs {
+	excludeFilter = file("config/spotbugs/exclude.xml")
+}
+
+jacocoTestReport {
+	reports {
+		html.enabled true
+		xml.enabled true
+	}
+}
+
+spotbugsMain {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
