@@ -45,9 +45,11 @@ jobs:
         echo ${{secrets.GPG_SECRET_KEYS}} | gpg --import --armor --no-tty --batch --yes
         git config --local user.email "candrews@integralblue.com"
         git config --local user.name "Craig Andrews (GitHub Actions)"
+        git config --local user.signingKey ${${{secrets.GPG_KEY_ID}}: -8}
         git config --local commit.gpgsign true
         git config --local user.signingkey ${{secrets.GPG_KEY_ID}}
-        ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.releaseVersion }}
+        gpg --keyring secring.gpg --export-secret-keys > .gnupg/secring.gpg
+        ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.releaseVersion }} -Psigning.secretKeyRingFile=.gnupg/secring.gpg -Psigning.keyId=${${{secrets.GPG_KEY_ID}}: -8} -Psigning.password=
       env:
         GITHUB_ACTOR: ${{ github.actor }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
