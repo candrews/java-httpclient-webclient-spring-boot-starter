@@ -15,7 +15,6 @@ plugins {
 }
 
 group = 'com.integralblue'
-version = '0.0.1-SNAPSHOT'
 
 ext {
 	isReleaseVersion = !version.endsWith("-SNAPSHOT")
@@ -150,7 +149,6 @@ publishing {
 				password = System.getenv("OSSRH_PASSWORD")
 			}
 		}
-		/*
 		maven {
 			name = "GitHubPackages"
 			url = "https://maven.pkg.github.com/candrews/java-httpclient-webflux-spring-boot-starter"
@@ -159,7 +157,6 @@ publishing {
 				password = System.getenv("GITHUB_TOKEN")
 			}
 		}
-		*/
 	}
 }
 
