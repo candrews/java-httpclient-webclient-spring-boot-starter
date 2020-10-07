@@ -25,11 +25,6 @@ jobs:
         restore-keys: ${{ runner.os }}-gradle
     - name: Build
       run: ./gradlew build
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: Package
-        path: build/libs
     - name: Publish
       if: github.ref == 'refs/heads/master'
       run: ./gradlew publish
@@ -55,3 +50,8 @@ jobs:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Package
+        path: build/libs
