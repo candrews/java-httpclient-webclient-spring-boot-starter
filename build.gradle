@@ -166,6 +166,7 @@ release {
 }
 
 nexusStaging {
+	packageGroup = group
 	username = System.getenv("OSSRH_USERNAME")
 	password = System.getenv("OSSRH_PASSWORD")
 }
@@ -179,9 +180,13 @@ task publishToGitHubAndOSSRH {
     dependsOn publishToSonatype
 }
 
+closeAndReleaseRepository {
+	onlyIf { nexusPublishing.useStaging.get() }
+	mustRunAfter publishToSonatype
+}
+
 afterReleaseBuild {
 	dependsOn publishToGitHubAndOSSRH
-	dependsOn closeAndReleaseRepository
 }
 
 pmd {
