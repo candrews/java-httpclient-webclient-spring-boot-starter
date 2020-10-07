@@ -181,7 +181,7 @@ task publishToGitHubAndOSSRH {
 }
 
 closeAndReleaseRepository {
-	onlyIf { nexusPublishing.useStaging.get() }
+	onlyIf { !project.version.toString().endsWith("-SNAPSHOT") }
 	mustRunAfter publishToSonatype
 }
 
