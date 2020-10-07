@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.3.4.RELEASE'
 	id 'java-library'
 	id 'io.codearte.nexus-staging' version '0.22.0'
+	id "de.marcphilipp.nexus-publish" version "0.3.0"
 	id 'maven-publish'
 	id 'signing'
 	id 'checkstyle'
@@ -15,10 +16,6 @@ plugins {
 }
 
 group = 'com.integralblue'
-
-ext {
-	isReleaseVersion = !version.endsWith("-SNAPSHOT")
-}
 
 compileJava {
 	options.release = 11
@@ -140,22 +137,20 @@ publishing {
 	}
 	repositories {
 		maven {
-			name = "OSSRH"
-			def releaseRepo = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-			def snapshotRepo = "https://oss.sonatype.org/content/repositories/snapshots/"
-			url = isReleaseVersion ? releaseRepo : snapshotRepo
-			credentials {
-				username = System.getenv("OSSRH_USERNAME")
-				password = System.getenv("OSSRH_PASSWORD")
-			}
-		}
-		maven {
 			name = "GitHubPackages"
 			url = "https://maven.pkg.github.com/candrews/java-httpclient-webclient-spring-boot-starter"
 			credentials {
 				username = System.getenv("GITHUB_ACTOR")
 				password = System.getenv("GITHUB_TOKEN")
 			}
+		}
+	}
+}
+nexusPublishing {
+	repositories {
+		sonatype {
+				username = System.getenv("OSSRH_USERNAME")
+				password = System.getenv("OSSRH_PASSWORD")
 		}
 	}
 }
@@ -170,7 +165,24 @@ release {
 	}
 }
 
-afterReleaseBuild.dependsOn publish
+nexusStaging {
+	username = System.getenv("OSSRH_USERNAME")
+	password = System.getenv("OSSRH_PASSWORD")
+}
+
+task publishToGitHubAndOSSRH {
+    group = 'publishing'
+    description = 'Publishes to GitHub Packages and OSSRH.'
+    dependsOn tasks.withType(PublishToMavenRepository).matching {
+        it.repository == publishing.repositories.GitHubPackages
+    }
+    dependsOn publishToSonatype
+}
+
+afterReleaseBuild {
+	dependsOn publishToGitHubAndOSSRH
+	dependsOn closeAndReleaseRepository
+}
 
 pmd {
 	ruleSets = []

@@ -44,7 +44,7 @@ jobs:
     - name: Publish
       if: github.ref == 'refs/heads/master'
       run: |
-        ./gradlew publish
+        ./gradlew publishToGitHubAndOSSRH
       env:
         GITHUB_ACTOR: ${{ github.actor }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
