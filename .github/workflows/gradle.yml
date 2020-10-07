@@ -23,18 +23,8 @@ jobs:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
-    - name: Build
-      run: ./gradlew build
-    - name: Publish
-      if: github.ref == 'refs/heads/master'
-      run: ./gradlew publish
-      env:
-        GITHUB_ACTOR: ${{ github.actor }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-    - name: Release
-      if: github.event_name == 'workflow_dispatch'
+    - name: Set Up Signing
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/master'
       run: |
         echo '${{secrets.GPG_SECRET_KEYS}}' | gpg --import --armor --no-tty --batch --yes # GPG_SECRET_KEYS created with: gpg --export-secret-keys --armor
         git config --local user.email "candrews@integralblue.com"
@@ -42,8 +32,24 @@ jobs:
         git config --local user.signingKey "${GPG_KEY_ID: -8}"
         git config --local commit.gpgsign true
         git config --local user.signingkey "${GPG_KEY_ID}"
-        gpg --export-secret-keys > .gnupg/secring.gpg
-        ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.releaseVersion }} -Psigning.secretKeyRingFile=.gnupg/secring.gpg -Psigning.keyId="${GPG_KEY_ID: -8}" -Psigning.password=
+      env:
+        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+    - name: Build
+      run: ./gradlew build
+    - name: Publish
+      if: github.ref == 'refs/heads/master'
+      run: |
+        ./gradlew signMavenJavaPublication publish -Psigning.keyId="${GPG_KEY_ID: -8}" -Psigning.password=
+      env:
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+    - name: Release
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.releaseVersion }} -Psigning.keyId="${GPG_KEY_ID: -8}" -Psigning.password=
       env:
         GITHUB_ACTOR: ${{ github.actor }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
