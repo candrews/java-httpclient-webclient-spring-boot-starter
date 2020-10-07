@@ -33,7 +33,7 @@ jobs:
         git config --local user.signingKey "${GPG_KEY_ID: -8}"
         git config --local commit.gpgsign true
         git config --local user.signingkey "${GPG_KEY_ID}"
-        echo "signing.secretKeyRingFile=.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
+        echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
         echo "signing.keyId=${GPG_KEY_ID: -8}" >> ~/.gradle/gradle.properties
         echo "signing.gnupg.useLegacyGpg=true" >> ~/.gradle/gradle.properties
         echo "signing.password=" >> ~/.gradle/gradle.properties
