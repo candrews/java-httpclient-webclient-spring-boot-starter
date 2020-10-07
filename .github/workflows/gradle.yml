@@ -41,7 +41,7 @@ jobs:
     - name: Release
       if: github.event_name == 'workflow_dispatch'
       run: |
-        echo '"${{secrets.GPG_SECRET_KEYS}}' | gpg --import --armor --no-tty --batch --yes # GPG_SECRET_KEYS created with: gpg --export-secret-keys --armor
+        echo '${{secrets.GPG_SECRET_KEYS}}' | gpg --import --armor --no-tty --batch --yes # GPG_SECRET_KEYS created with: gpg --export-secret-keys --armor
         git config --local user.email "candrews@integralblue.com"
         git config --local user.name "Craig Andrews (GitHub Actions)"
         git config --local user.signingKey "${GPG_KEY_ID: -8}"
