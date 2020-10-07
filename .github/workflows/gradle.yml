@@ -53,6 +53,7 @@ jobs:
     - name: Release
       if: github.event_name == 'workflow_dispatch'
       run: |
+        rm build/libs -rf
         ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=${{ github.event.inputs.releaseVersion }}
       env:
         GITHUB_ACTOR: ${{ github.actor }}
