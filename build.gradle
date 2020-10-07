@@ -164,10 +164,6 @@ signing {
 	sign publishing.publications.mavenJava
 }
 
-tasks.withType(Sign) {
-    onlyIf { isReleaseVersion }
-}
-
 release {
 	git {
 		signTag = true
