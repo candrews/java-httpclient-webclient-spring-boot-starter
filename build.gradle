@@ -174,6 +174,8 @@ release {
 	}
 }
 
+afterReleaseBuild.dependsOn publish
+
 pmd {
 	ruleSets = []
 	ruleSetConfig = resources.text.fromFile("config/pmd/pmdruleset.xml")
