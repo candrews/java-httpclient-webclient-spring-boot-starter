@@ -1,6 +1,6 @@
 # Java HttpClient for Spring Web Client Boot Starter
 [![javadoc](https://javadoc.io/badge2/com.integralblue/java-httpclient-webclient-spring-boot-starter/javadoc.svg)](https://javadoc.io/doc/com.integralblue/java-httpclient-webclient-spring-boot-starter)
-![Maven Central](https://img.shields.io/maven-central/v/com.integralblue/java-httpclient-webclient-spring-boot-starter)
+[![Maven Central](https://img.shields.io/maven-central/v/com.integralblue/java-httpclient-webclient-spring-boot-starter)](https://search.maven.org/artifact/com.integralblue/java-httpclient-webclient-spring-boot-starter)
 ![GitHub](https://img.shields.io/github/license/candrews/java-httpclient-webclient-spring-boot-starter)
 
 The Java HttpClient for Spring Web Client Boot Starter provides a quick and easy way to use [Java 11's HttpClient](https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpClient.html) as [Spring WebClient's](https://docs.spring.io/spring-boot/docs/2.3.4.RELEASE/reference/htmlsingle/#boot-features-webclient) client HTTP connector.
